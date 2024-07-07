@@ -10,7 +10,6 @@ type Nexter interface {
 }
 
 type RateLimit struct {
-	exitch   chan struct{}
 	ipch     chan string
 	errorch  chan error
 	bucket   map[string]int
@@ -21,7 +20,6 @@ type RateLimit struct {
 func New(capacity int, duration time.Duration) *RateLimit {
 	r := &RateLimit{
 		bucket:   make(map[string]int),
-		exitch:   make(chan struct{}),
 		errorch:  make(chan error),
 		ipch:     make(chan string),
 		capacity: capacity,
@@ -40,10 +38,6 @@ func (r *RateLimit) Start(ip string, nexter Nexter) error {
 
 	nexter.Next()
 	return nil
-}
-
-func (r *RateLimit) Stop() {
-	close(r.exitch)
 }
 
 func (r *RateLimit) refill() {
@@ -67,9 +61,6 @@ func (r *RateLimit) refill() {
 				r.bucket[val]++
 				r.errorch <- nil
 			}
-		case <-r.exitch:
-			ticker.Stop()
-			return
 		}
 	}
 }

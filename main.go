@@ -5,13 +5,14 @@ import (
 	"time"
 
 	ratelimitter "github.com/cryptoPickle/rate_limitter/pkg/rate_limitter"
+	"github.com/cryptoPickle/rate_limitter/types"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
 	*gin.Engine
-	*ratelimitter.RateLimit
+	RateLimit types.IRateLimitter
 }
 
 func NewServer(r *ratelimitter.RateLimit) *Server {
@@ -31,10 +32,11 @@ func (s *Server) Router() {
 		})
 }
 
-func RateLimitterMiddleWare(rl *ratelimitter.RateLimit) func(*gin.Context) {
+func RateLimitterMiddleWare(rl types.IRateLimitter) func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		clientIp := ctx.ClientIP()
-		if err := rl.Start(clientIp, ctx); err != nil {
+		ctx.Set("ip", clientIp)
+		if err := rl.Start(ctx); err != nil {
 			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"message": "rate limit exceeded"})
 			return
 		}

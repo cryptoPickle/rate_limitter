@@ -1,13 +1,12 @@
 package ratelimitter
 
 import (
+	"errors"
 	"fmt"
 	"time"
-)
 
-type Nexter interface {
-	Next()
-}
+	"github.com/cryptoPickle/rate_limitter/types"
+)
 
 type RateLimit struct {
 	ipch     chan string
@@ -30,14 +29,23 @@ func New(capacity int, duration time.Duration) *RateLimit {
 	return r
 }
 
-func (r *RateLimit) Start(ip string, nexter Nexter) error {
-	r.ipch <- ip
-	if err := <-r.errorch; err != nil {
-		return err
+func (r *RateLimit) Start(nexter types.Nexter) error {
+	val, ok := nexter.Get("ip")
+
+	if !ok {
+		return errors.New("can't get ip")
 	}
 
-	nexter.Next()
-	return nil
+	if ip, ok := val.(string); ok {
+		r.ipch <- ip
+		if err := <-r.errorch; err != nil {
+			return err
+		}
+
+		nexter.Next()
+		return nil
+	}
+	return errors.New("ip adress should be string")
 }
 
 func (r *RateLimit) refill() {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	ratelimitter "github.com/cryptoPickle/rate_limitter/pkg/rate_limitter"
+	"github.com/cryptoPickle/rate_limitter/pkg/util"
 	"github.com/cryptoPickle/rate_limitter/types"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,8 @@ func (s *Server) Router() {
 
 func RateLimitterMiddleWare(rl types.IRateLimitter) func(*gin.Context) {
 	return func(ctx *gin.Context) {
+		stop := util.Took("RateLimitterMiddleware")
+		defer stop()
 		clientIp := ctx.ClientIP()
 		ctx.Set("ip", clientIp)
 		if err := rl.Start(ctx); err != nil {

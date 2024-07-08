@@ -15,7 +15,7 @@ type Server struct {
 	RateLimit types.IRateLimitter
 }
 
-func NewServer(r *ratelimitter.RateLimit) *Server {
+func NewServer(r types.IRateLimitter) *Server {
 	s := gin.Default()
 	return &Server{
 		Engine:    s,

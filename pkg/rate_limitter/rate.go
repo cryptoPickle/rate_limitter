@@ -9,12 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Bucketer interface {
-	Set(string, int) error
-	Get(string) (int, error)
-	Has(string) bool
-	DecrementAll() error
-}
 type RateLimit struct {
 	ipch     chan string
 	ratech   chan error

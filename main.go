@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cryptoPickle/rate_limitter/pkg/bucket"
 	ratelimitter "github.com/cryptoPickle/rate_limitter/pkg/rate_limitter"
 	"github.com/cryptoPickle/rate_limitter/pkg/util"
 	"github.com/cryptoPickle/rate_limitter/types"
@@ -47,7 +48,8 @@ func RateLimitterMiddleWare(rl types.IRateLimitter) func(*gin.Context) {
 }
 
 func main() {
-	rl := ratelimitter.New(10, time.Second*1)
+	bucket := bucket.New()
+	rl := ratelimitter.New(10, time.Second*1, bucket)
 	s := NewServer(rl)
 	s.Router()
 	if err := s.Run(":8080"); err != nil {
